@@ -45,7 +45,6 @@
 
 #include "nuc970fb.h"
 
-
 #ifdef CONFIG_ILI9431_MPU80_240x320
 void nuc970_mpu_write_cmd(struct fb_info *info, unsigned short uscmd)
 {
@@ -225,7 +224,7 @@ static void nuc970fb_set_lcdaddr(struct fb_info *info)
 }
 
 /*
- *	Check the video params of 'var'.
+ *      Check the video params of 'var'.
  */
 static int nuc970fb_check_var(struct fb_var_screeninfo *var,
 				   struct fb_info *info)
@@ -261,28 +260,31 @@ static int nuc970fb_check_var(struct fb_var_screeninfo *var,
 	}
 
 	/* it should be the same size as the display */
-	var->xres_virtual	= display->xres;
+	var->xres_virtual       = display->xres;
 #ifdef CONFIG_NUC970_DUAL_FB
-	var->yres_virtual	= display->yres * 2;
+	var->yres_virtual       = display->yres * 2;
 #else
-	var->yres_virtual	= display->yres;
+	var->yres_virtual       = display->yres;
 #endif
-	var->height		= display->height;
-	var->width		= display->width;
+	var->height             = display->height;
+	var->width              = display->width;
 
 	/* copy lcd settings */
-	var->pixclock		= display->pixclock;
-	var->left_margin	= display->left_margin;
-	var->right_margin	= display->right_margin;
-	var->upper_margin	= display->upper_margin;
-	var->lower_margin	= display->lower_margin;
-	var->vsync_len		= display->vsync_len;
-	var->hsync_len		= display->hsync_len;
+	var->pixclock           = display->pixclock;
+	var->left_margin        = display->left_margin;
+	var->right_margin       = display->right_margin;
+	var->upper_margin       = display->upper_margin;
+	var->lower_margin       = display->lower_margin;
+	var->vsync_len          = display->vsync_len;
+	var->hsync_len          = display->hsync_len;
 
-	var->transp.offset	= 0;
-	var->transp.length	= 0;
+	var->transp.offset      = 0;
+	var->transp.length      = 0;
 
 	fbi->regs.lcd_dccs = display->dccs;
+#ifdef CONFIG_NUC970_DUAL_FB
+	fbi->regs.lcd_dccs |= LCM_DCCS_DISP_INT_EN;
+#endif
 	fbi->regs.lcd_device_ctrl = display->devctl;
 	fbi->regs.lcd_va_fbctrl = display->fbctrl;
 	fbi->regs.lcd_va_scale = display->scale;
@@ -294,42 +296,42 @@ static int nuc970fb_check_var(struct fb_var_screeninfo *var,
 	case 4:
 	case 8:
 	default:
-		var->red.offset 	= 0;
-		var->red.length 	= var->bits_per_pixel;
-		var->green 		= var->red;
-		var->blue		= var->red;
+		var->red.offset         = 0;
+		var->red.length         = var->bits_per_pixel;
+		var->green              = var->red;
+		var->blue               = var->red;
 		break;
 	case 12:
-		var->red.length		= 4;
-		var->green.length	= 4;
-		var->blue.length	= 4;
-		var->red.offset		= 8;
-		var->green.offset	= 4;
-		var->blue.offset	= 0;
+		var->red.length         = 4;
+		var->green.length       = 4;
+		var->blue.length        = 4;
+		var->red.offset         = 8;
+		var->green.offset       = 4;
+		var->blue.offset        = 0;
 		break;
 	case 16:
-		var->red.length		= 5;
-		var->green.length	= 6;
-		var->blue.length	= 5;
-		var->red.offset		= 11;
-		var->green.offset	= 5;
-		var->blue.offset	= 0;
+		var->red.length         = 5;
+		var->green.length       = 6;
+		var->blue.length        = 5;
+		var->red.offset         = 11;
+		var->green.offset       = 5;
+		var->blue.offset        = 0;
 		break;
 	case 18:
-		var->red.length		= 6;
-		var->green.length	= 6;
-		var->blue.length	= 6;
-		var->red.offset		= 12;
-		var->green.offset	= 6;
-		var->blue.offset	= 0;
+		var->red.length         = 6;
+		var->green.length       = 6;
+		var->blue.length        = 6;
+		var->red.offset         = 12;
+		var->green.offset       = 6;
+		var->blue.offset        = 0;
 		break;
 	case 32:
-		var->red.length		= 8;
-		var->green.length	= 8;
-		var->blue.length	= 8;
-		var->red.offset		= 16;
-		var->green.offset	= 8;
-		var->blue.offset	= 0;
+		var->red.length         = 8;
+		var->green.length       = 8;
+		var->blue.length        = 8;
+		var->red.offset         = 16;
+		var->green.offset       = 8;
+		var->blue.offset        = 0;
 		break;
 	}
 
@@ -337,7 +339,7 @@ static int nuc970fb_check_var(struct fb_var_screeninfo *var,
 }
 
 /*
- *	Calculate lcd register values from var setting & save into hw
+ *      Calculate lcd register values from var setting & save into hw
  */
 static void nuc970fb_calculate_lcd_regs(const struct fb_info *info,
 					struct nuc970fb_hw *regs)
@@ -361,8 +363,8 @@ static void nuc970fb_calculate_lcd_regs(const struct fb_info *info,
 }
 
 /*
- *	Activate (set) the controller from the given framebuffer
- *	information
+ *      Activate (set) the controller from the given framebuffer
+ *      information
  */
 static void nuc970fb_activate_var(struct fb_info *info)
 {
@@ -465,10 +467,29 @@ static int nuc970fb_setcolreg(unsigned regno,
  */
 static int nuc970fb_blank(int blank_mode, struct fb_info *info)
 {
-
 	return 0;
 }
 
+static int nuc970fb_ioctl(struct fb_info *info, unsigned int cmd,
+			 unsigned long arg)
+{
+	struct nuc970fb_info *fbi = info->par;
+	int  vcnt, ret = 0;
+
+	if (cmd == FBIO_WAITFORVSYNC) {
+		vcnt = fbi->vsync_count;
+		ret = wait_event_interruptible_timeout(fbi->wait,
+			(vcnt != fbi->vsync_count), HZ / 10);
+
+		if (ret < 0)
+			return ret;
+		if (ret == 0) {
+			printk("Err! wait vsync timeout!\n");
+			return -ETIMEDOUT;
+		}
+	}
+	return ret;
+}
 
 #ifdef CONFIG_NUC970_DUAL_FB
 static int nuc970fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
@@ -479,27 +500,29 @@ static int nuc970fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *i
 	spin_lock_irqsave(&fbi->lock, flags);
 
 	fbi->dual_fb_base = var->yoffset * info->fix.line_length;
-	
+
 	spin_unlock_irqrestore(&fbi->lock, flags);
 
-	// printk("pan_display: [0x%x],  %d, %d - %d, %d\n", fbi->dual_fb_base, var->xoffset, var->yoffset, info->var.xoffset, info->var.yoffset);
+	//printk("pan_display: [0x%x],  %d, %d - %d, %d\n", fbi->dual_fb_base, var->xoffset, var->yoffset, info->var.xoffset, info->var.yoffset);
+	//printk("[0x%x, 0x%x]\n", readl(fbi->io + REG_LCM_DCCS), readl(fbi->io +  REG_LCM_INT_CS));
 	return 0;
 }
 #endif  /* CONFIG_NUC970_DUAL_FB */
 
 
 static struct fb_ops nuc970fb_ops = {
-	.owner			= THIS_MODULE,
-	.fb_check_var	= nuc970fb_check_var,
-	.fb_set_par		= nuc970fb_set_par,
-	.fb_blank		= nuc970fb_blank,
+	.owner          = THIS_MODULE,
+	.fb_check_var   = nuc970fb_check_var,
+	.fb_set_par     = nuc970fb_set_par,
+	.fb_blank       = nuc970fb_blank,
+	.fb_ioctl       = nuc970fb_ioctl,
 #ifdef CONFIG_NUC970_DUAL_FB
 	.fb_pan_display = nuc970fb_pan_display,
 #endif
-	.fb_setcolreg	= nuc970fb_setcolreg,
-	.fb_fillrect	= cfb_fillrect,
-	.fb_copyarea	= cfb_copyarea,
-	.fb_imageblit	= cfb_imageblit,
+	.fb_setcolreg   = nuc970fb_setcolreg,
+	.fb_fillrect    = cfb_fillrect,
+	.fb_copyarea    = cfb_copyarea,
+	.fb_imageblit   = cfb_imageblit,
 };
 
 
@@ -562,7 +585,6 @@ static int nuc970fb_map_video_memory(struct fb_info *info)
 
 	info->screen_base = dma_alloc_writecombine(fbi->dev, map_size,
 							&map_dma, GFP_KERNEL);
-
 	if (!info->screen_base)
 		return -ENOMEM;
 
@@ -586,8 +608,12 @@ static irqreturn_t nuc970fb_irqhandler(int irq, void *dev_id)
 	void __iomem *irq_base = fbi->irq_base;
 	unsigned long lcdirq = readl(regs + REG_LCM_INT_CS);
 
-	if (lcdirq & LCM_INT_CS_DISP_F_STATUS) 
+	//printk("[0x%x, 0x%x] lcdirq = 0x%x\n", readl(fbi->io + REG_LCM_DCCS), readl(fbi->io +  REG_LCM_INT_CS), lcdirq);
+	if (lcdirq & LCM_INT_CS_DISP_F_STATUS)
 	{
+		fbi->vsync_count++;
+		wake_up_interruptible(&fbi->wait);
+
 		writel(readl(irq_base) | 1<<30, irq_base);
 #ifdef CONFIG_PM
 		if(fbi->powerdown) {
@@ -608,25 +634,25 @@ static irqreturn_t nuc970fb_irqhandler(int irq, void *dev_id)
 			regs + REG_LCM_DCCS);
 
 #ifdef CONFIG_NUC970_DUAL_FB
-		if (fbi->dual_fb_base == 0) 
+		if (fbi->dual_fb_base == 0)
 		{
 			/* Starting fetch data from VA_BADDR0 */
-			writel(readl(regs + REG_LCM_VA_FBCTRL) & ~LCM_VA_FBCTRL_START_BUF, regs + REG_LCM_VA_FBCTRL);		
+			writel(readl(regs + REG_LCM_VA_FBCTRL) & ~LCM_VA_FBCTRL_START_BUF, regs + REG_LCM_VA_FBCTRL);
 		}
 		else
 		{
 			/* Starting fetch data from VA_BADDR1 */
 			writel(readl(regs + REG_LCM_VA_BADDR0) + fbi->dual_fb_base, regs + REG_LCM_VA_BADDR1);
-			writel(readl(regs + REG_LCM_VA_FBCTRL) | LCM_VA_FBCTRL_START_BUF, regs + REG_LCM_VA_FBCTRL);		
+			writel(readl(regs + REG_LCM_VA_FBCTRL) | LCM_VA_FBCTRL_START_BUF, regs + REG_LCM_VA_FBCTRL);
 		}
 #endif
 
-	} 
-	else if (lcdirq & LCM_INT_CS_UNDERRUN_INT) 
+	}
+	else if (lcdirq & LCM_INT_CS_UNDERRUN_INT)
 	{
 		writel(readl(irq_base) | LCM_INT_CS_UNDERRUN_INT, irq_base);
-	} 
-	else if (lcdirq & LCM_INT_CS_BUS_ERROR_INT) 
+	}
+	else if (lcdirq & LCM_INT_CS_BUS_ERROR_INT)
 	{
 		writel(readl(irq_base) | LCM_INT_CS_BUS_ERROR_INT, irq_base);
 	}
@@ -706,13 +732,10 @@ static struct nuc970fb_mach_info *nuc970fb_parse_dt(struct device *dev)
 		return ERR_PTR(-ENOMEM);
 	}
 
-	printk("\t[%s]-->1\n", __func__);
-
 	mach_info->displays = display;
-	mach_info->num_displays = 1;		//fixed to only 1 display
+	mach_info->num_displays = 1;            //fixed to only 1 display
 	mach_info->default_display = 0;
 
-	printk("\t[%s]-->2\n", __func__);
 	if (of_property_read_u32(dev->of_node, "type", &temp)) {
 		dev_warn(dev, "can't get type from dt\n");
 		goto read_error;
@@ -883,7 +906,7 @@ static int nuc970fb_probe(struct platform_device *pdev)
 			"no platform data for lcd, cannot attach\n");
 		return -EINVAL;
 	}
-	printk("[%s] %x\n", __func__, mach_info->displays[0].bpp);
+	//printk("[%s] %x\n", __func__, mach_info->displays[0].bpp);
 
 	if (mach_info->default_display > mach_info->num_displays) {
 		dev_err(&pdev->dev,
@@ -928,7 +951,7 @@ static int nuc970fb_probe(struct platform_device *pdev)
 	}
 
 	fbi->irq_base = fbi->io + REG_LCM_INT_CS;
-	
+
 	spin_lock_init(&fbi->lock);
 	fbi->dual_fb_base        = 0;
 
@@ -937,23 +960,23 @@ static int nuc970fb_probe(struct platform_device *pdev)
 
 	/* fill the fbinfo*/
 	strcpy(fbinfo->fix.id, driver_name);
-	fbinfo->fix.type		= FB_TYPE_PACKED_PIXELS;
-	fbinfo->fix.type_aux		= 0;
-	fbinfo->fix.xpanstep		= 0;
+	fbinfo->fix.type                = FB_TYPE_PACKED_PIXELS;
+	fbinfo->fix.type_aux            = 0;
+	fbinfo->fix.xpanstep            = 0;
 #ifdef CONFIG_NUC970_DUAL_FB
-	fbinfo->fix.ypanstep		= 1;
+	fbinfo->fix.ypanstep            = 1;
 #else
-	fbinfo->fix.ypanstep		= 0;
+	fbinfo->fix.ypanstep            = 0;
 #endif
-	fbinfo->fix.ywrapstep		= 0;
-	fbinfo->fix.accel		= FB_ACCEL_NONE;
-	fbinfo->var.nonstd		= 0;
-	fbinfo->var.activate		= FB_ACTIVATE_NOW|FB_ACTIVATE_FORCE;
-	fbinfo->var.accel_flags		= 0;
-	fbinfo->var.vmode		= FB_VMODE_NONINTERLACED;
-	fbinfo->fbops			= &nuc970fb_ops;
-	fbinfo->flags			= FBINFO_FLAG_DEFAULT;
-	fbinfo->pseudo_palette		= &fbi->pseudo_pal;
+	fbinfo->fix.ywrapstep           = 0;
+	fbinfo->fix.accel               = FB_ACCEL_NONE;
+	fbinfo->var.nonstd              = 0;
+	fbinfo->var.activate            = FB_ACTIVATE_NOW|FB_ACTIVATE_FORCE;
+	fbinfo->var.accel_flags         = 0;
+	fbinfo->var.vmode               = FB_VMODE_NONINTERLACED;
+	fbinfo->fbops                   = &nuc970fb_ops;
+	fbinfo->flags                   = FBINFO_FLAG_DEFAULT;
+	fbinfo->pseudo_palette          = &fbi->pseudo_pal;
 #ifdef CONFIG_PM
 	fbi->powerdown           = 0;
 #endif
@@ -1029,16 +1052,18 @@ static int nuc970fb_probe(struct platform_device *pdev)
 	fbinfo->var.yres = display->yres;
 	fbinfo->var.bits_per_pixel = display->bpp;
 
+	init_waitqueue_head(&fbi->wait);
+
 	nuc970fb_init_registers(fbinfo);
 
 	nuc970fb_check_var(&fbinfo->var, fbinfo);
-	
+
 	ret = fb_set_var(fbinfo, &fbinfo->var);
 	if (ret) {
 		dev_warn(&pdev->dev, "unable to set display parameters\n");
 		goto free_video_memory;
 	}
-	
+
 	ret = nuc970fb_cpufreq_register(fbi);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "Failed to register cpufreq\n");
@@ -1081,11 +1106,10 @@ static int nuc970fb_probe(struct platform_device *pdev)
 	init_ili9341(fbinfo);
 #endif
 
-#ifdef CONFIG_PM
+#if defined(CONFIG_PM) || defined(CONFIG_NUC970_DUAL_FB)
 	writel(readl(fbi->io + REG_LCM_DCCS) | LCM_DCCS_DISP_INT_EN, fbi->io + REG_LCM_DCCS);
 	writel(readl(fbi->io +  REG_LCM_INT_CS) | LCM_INT_CS_DISP_F_EN, fbi->io + REG_LCM_INT_CS);
 #endif
-
 	return 0;
 
 free_cpufreq:
@@ -1154,12 +1178,12 @@ static int nuc970fb_remove(struct platform_device *pdev)
 
 #ifdef CONFIG_PM
 /*
- *	suspend and resume support for the lcd controller
+ *      suspend and resume support for the lcd controller
  */
-#define NUC970_FB_TIMEOUT	(msecs_to_jiffies(5000))
+#define NUC970_FB_TIMEOUT       (msecs_to_jiffies(5000))
 static int nuc970fb_suspend(struct platform_device *dev, pm_message_t state)
 {
-	struct fb_info	   *fbinfo = platform_get_drvdata(dev);
+	struct fb_info     *fbinfo = platform_get_drvdata(dev);
 	struct nuc970fb_info *info = fbinfo->par;
 	unsigned long timeout;
 
@@ -1176,7 +1200,7 @@ static int nuc970fb_suspend(struct platform_device *dev, pm_message_t state)
 
 static int nuc970fb_resume(struct platform_device *dev)
 {
-	struct fb_info	   *fbinfo = platform_get_drvdata(dev);
+	struct fb_info     *fbinfo = platform_get_drvdata(dev);
 	struct nuc970fb_info *info = fbinfo->par;
 
 	printk(KERN_INFO "fb resume\n");
@@ -1209,13 +1233,13 @@ MODULE_DEVICE_TABLE(of, nuc970_lcd_of_match);
 #endif
 
 static struct platform_driver nuc970fb_driver = {
-	.probe		= nuc970fb_probe,
-	.remove		= nuc970fb_remove,
-	.suspend	= nuc970fb_suspend,
-	.resume		= nuc970fb_resume,
-	.driver		= {
-		.name	= "nuc970-lcd",
-		.owner	= THIS_MODULE,
+	.probe          = nuc970fb_probe,
+	.remove         = nuc970fb_remove,
+	.suspend        = nuc970fb_suspend,
+	.resume         = nuc970fb_resume,
+	.driver         = {
+		.name   = "nuc970-lcd",
+		.owner  = THIS_MODULE,
 #if defined(CONFIG_OF)
 		.of_match_table = of_match_ptr(nuc970_lcd_of_match),
 #endif
